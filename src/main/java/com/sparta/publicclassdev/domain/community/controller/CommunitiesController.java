@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.community.controller;
 
+import com.sparta.publicclassdev.domain.community.dto.CommunitiesRankDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesRequestDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesUpdateRequestDto;
@@ -10,6 +11,7 @@ import com.sparta.publicclassdev.global.dto.MessageResponse;
 import com.sparta.publicclassdev.global.security.UserDetailsImpl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -67,5 +69,11 @@ public class CommunitiesController {
         (@RequestParam("keyword") String keyword, @RequestParam("page") int page){
         List<CommunitiesResponseDto> responseDto = service.searchPost(keyword, page);
         return ResponseEntity.status(HttpStatus.OK).body(new DataResponse<>(HttpStatus.OK.value(), " 조회 완료", responseDto));
+    }
+
+    @GetMapping("/community/searchRank")
+    public ResponseEntity<DataResponse<List<CommunitiesRankDto>>> ranking(){
+        List<CommunitiesRankDto> rankDto = service.rank();
+        return ResponseEntity.status(HttpStatus.OK).body(new DataResponse<>(HttpStatus.OK.value(), " 조회 완료", rankDto));
     }
 }

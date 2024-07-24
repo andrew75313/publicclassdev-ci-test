@@ -1,5 +1,6 @@
 package com.sparta.publicclassdev.domain.community.service;
 
+import com.sparta.publicclassdev.domain.community.dto.CommunitiesRankDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesRequestDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesUpdateRequestDto;
@@ -9,17 +10,22 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CommunitiesService {
     private final CommunitiesRepository repository;
+    private final RedisTemplate<String, String> redisTemplate;
+
 
     public CommunitiesResponseDto createPost(CommunitiesRequestDto requestDto, Users user) {
         Communities community = Communities.builder()
@@ -75,8 +81,19 @@ public class CommunitiesService {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Communities> communityPage = repository.findByTitleContainingIgnoreCase(keyword, pageable);
 
+        if(!communityPage.isEmpty()){
+            redisTemplate.opsForZSet().incrementScore("searchRank",keyword,1);
+        }
+
         return communityPage.stream()
             .map(communities -> new CommunitiesResponseDto(communities.getTitle(), communities.getContent(), communities.getCategory()))
             .collect(Collectors.toList());
+    }
+
+    public List<CommunitiesRankDto> rank() {
+        String key = "searchRank";
+        ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores(key, 0, 5);
+        return typedTuples.stream().map(typedTuple -> new CommunitiesRankDto(typedTuple.getValue())).toList();
     }
 }
