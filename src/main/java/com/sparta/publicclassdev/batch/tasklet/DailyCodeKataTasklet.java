@@ -9,16 +9,14 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DailyCodeKataTasklet implements Tasklet {
 
     private final CodeKatasService codeKatasService;
-    public DailyCodeKataTasklet(CodeKatasService codeKatasService) {
-        this.codeKatasService = codeKatasService;
-    }
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext context) {
-        codeKatasService.dailyQuestion();
+        codeKatasService.dailyCodeKata();
         return RepeatStatus.FINISHED;
     }
 }
