@@ -49,7 +49,10 @@ public enum ErrorCode {
 	TOKEN_NOTFOUND(404, "토큰을 찾을 수 없습니다."),
 
 	//Team
-	TEAM_NOT_FOUND(404, "해당 팀을 찾을 수 없습니다");
+	TEAM_NOT_FOUND(404, "해당 팀을 찾을 수 없습니다"),
+
+	//CodeKata
+	NOT_FOUND_CODEKATA(404, "해당 코드카타를 찾을 수 없습니다.");
 
 	private final Integer status;
 	private final String message;
