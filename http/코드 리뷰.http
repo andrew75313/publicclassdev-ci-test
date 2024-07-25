@@ -51,6 +51,12 @@ Content-Type: application/json
 Authorization: {{Authorization}}
 
 
+### GET 코드 리뷰 게시글 검색
+GET http://localhost:8080/api/codereviews/search?category=java&page=1
+Content-Type: application/json
+Authorization: {{Authorization}}
+
+
 ### POST 코드 리뷰 댓글 생성
 POST http://localhost:8080/api/codereviews/1/comments
 Content-Type: application/json

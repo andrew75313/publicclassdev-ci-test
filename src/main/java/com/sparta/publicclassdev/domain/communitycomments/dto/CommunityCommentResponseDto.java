@@ -12,4 +12,8 @@ public class CommunityCommentResponseDto {
         this.content = content;
         this.communityId = communityId;
     }
+
+    public CommunityCommentResponseDto(String content){
+        this.content = content;
+    }
 }

@@ -39,9 +39,7 @@ public class Users {
 
     @Column(nullable = false)
     private String password;
-    private Long point;
-    @Column(name = "refresh_token")
-    private String refreshToken;
+    private int point;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -57,10 +55,11 @@ public class Users {
     private List<Messages> messages;
 
     @Builder
-    public Users(String name, String email, String password, RoleEnum role) {
+    public Users(String name, String email, String password, int point, RoleEnum role) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.point = point;
         this.role = role;
     }
 
@@ -70,11 +69,11 @@ public class Users {
         this.intro = intro;
     }
 
-    public void updateRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
     public void updateRole(RoleEnum role) {
         this.role = role;
+    }
+
+    public void updatePoint(int point) {
+        this.point = point;
     }
 }

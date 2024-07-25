@@ -12,11 +12,11 @@ POST http://localhost:8080/api/users/signup
 Content-Type: application/json
 
 {
-  "name" : "홍길동",
-  "email" : "asdf1234@email.com",
-  "password" : "Asdf1234!",
-  "admin" : "true",
-  "adminToken" : "admin1234!"
+  "name" : "김길동",
+  "email" : "asdf2345@email.com",
+  "password" : "Asdf2345!",
+  "admin" : "false",
+  "adminToken" : ""
 }
 
 ###
@@ -31,7 +31,7 @@ Content-Type: application/json
 
 {
   "email" : "asdf1234@email.com",
-  "password" : "Asdf1111!"
+  "password" : "Asdf1234!"
 }
 
 > {%
@@ -102,8 +102,12 @@ Content-Type: application/json
 %}
 
 ###
+# curl -X POST --location "http://localhost:8080/api/users/reissue-token"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "refreshToken": "{{RefreshToken}}"
+#        }'
 POST http://localhost:8080/api/users/reissue-token
-Authorization: {{Authorization}}
 Content-Type: application/json
 
 {
@@ -114,3 +118,30 @@ Content-Type: application/json
   client.global.set("Authorization", response.headers.valueOf("Authorization"));
   client.global.set("RefreshToken", response.headers.valueOf("RefreshToken"));
 %}
+
+###
+# curl -X GET --location "http://localhost:8080/api/users/points"
+#    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iLCJhdXRoIjoiQURNSU4iLCJleHAiOjE3MjE4OTA2NzMsImlhdCI6MTcyMTg4ODg3M30.ffG5GE-CrEBXqofaUPtCJnpEqO8QV8yKed-fUtsCWfY"
+#    -H "Content-Type: application/json"
+GET http://localhost:8080/api/users/points
+Authorization: {{Authorization}}
+Content-Type: application/json
+
+###
+# curl -X PATCH --location "http://localhost:8080/api/users/points"
+#    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmMTIzNEBlbWFpbC5jb20iLCJhdXRoIjoiQURNSU4iLCJleHAiOjE3MjE4OTA2NzMsImlhdCI6MTcyMTg4ODg3M30.ffG5GE-CrEBXqofaUPtCJnpEqO8QV8yKed-fUtsCWfY"
+#    -H "Content-Type: application/json"
+#    -d '{
+#          "point": "10",
+#          "type": "SUBTRACT"
+#        }'
+PATCH http://localhost:8080/api/users/points
+Authorization: {{Authorization}}
+Content-Type: application/json
+
+{
+  "point": "10",
+  "type": "SUBTRACT"
+}
+
+###

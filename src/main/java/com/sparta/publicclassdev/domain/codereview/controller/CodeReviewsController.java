@@ -4,6 +4,7 @@ import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsDetailResponse
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsSearchResponseDto;
 import com.sparta.publicclassdev.domain.codereview.service.CodeReviewsService;
 import com.sparta.publicclassdev.global.dto.DataResponse;
 import com.sparta.publicclassdev.global.dto.MessageResponse;
@@ -60,6 +61,18 @@ public class CodeReviewsController {
 
     return ResponseEntity.status(HttpStatus.OK)
         .body(new DataResponse<>(200, "코드 리뷰 게시글 조회 완료", response));
+  }
+
+  @GetMapping("/codereviews/search")
+  public ResponseEntity<DataResponse<CodeReviewsSearchResponseDto>> getCodeReviewsByCategory(
+      @RequestParam String category
+      , @RequestParam(defaultValue = "1") int page) {
+
+    CodeReviewsSearchResponseDto responseList = codeReviewsService.getCodeReviewsByCategory(category,
+        page - 1);
+
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(new DataResponse<>(200, "코드 리뷰 게시글 검색 완료", responseList));
   }
 
   @DeleteMapping("/codereviews/{codeReviewsId}")

@@ -55,9 +55,7 @@ public class CodeReviewCommentsService {
 
     CodeReviewComments foundCodeReviewComments = validateCodeReviewCommentId(codeReviewCommentsId);
 
-    if (!foundCodeReviewComments.getUser().getId().equals(foundUser.getId())) {
-      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
-    }
+    validateOwnership(foundCodeReviewComments, foundUser);
 
     foundCodeReviewComments.updateCodeReviewComment(codeReviewCommentsRequestDto);
 
@@ -73,9 +71,7 @@ public class CodeReviewCommentsService {
 
     CodeReviewComments foundCodeReviewComments = validateCodeReviewCommentId(codeReviewCommentsId);
 
-    if (!foundCodeReviewComments.getUser().getId().equals(foundUser.getId())) {
-      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
-    }
+    validateOwnership(foundCodeReviewComments, foundUser);
 
     foundCodeReviewComments.delete();
   }
@@ -102,6 +98,16 @@ public class CodeReviewCommentsService {
     }
 
     return foundCodeReviews;
+  }
+
+  public void validateOwnership(CodeReviewComments codeReviewComments, Users user) {
+    Users writer = codeReviewComments.getUser();
+
+    if (!writer.getRole().equals(RoleEnum.ADMIN)) {
+      if (!writer.getId().equals(user.getId())) {
+        throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+      }
+    }
   }
 
   public CodeReviewComments validateCodeReviewCommentId(Long codeReviewCommentId) {

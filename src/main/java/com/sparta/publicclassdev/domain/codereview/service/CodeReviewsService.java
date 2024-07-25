@@ -4,6 +4,7 @@ import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsDetailResponse
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsListResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsRequestDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsResponseDto;
+import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsSearchResponseDto;
 import com.sparta.publicclassdev.domain.codereview.dto.CodeReviewsWithUserResponseDto;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews;
 import com.sparta.publicclassdev.domain.codereview.entity.CodeReviews.Status;
@@ -102,6 +103,26 @@ public class CodeReviewsService {
         commentList);
   }
 
+  public CodeReviewsSearchResponseDto getCodeReviewsByCategory(String category, int page) {
+
+    Pageable pageable = PageRequest.of(page, SizingConstants.PAGE_SIZE);
+
+    category = arrangeCategory(category);
+
+    Page<Tuple> codeReviewsPage = codeReviewsRepository.findAllByCategory(category + " ", pageable);
+
+    List<CodeReviewsWithUserResponseDto> responseDtoList = codeReviewsPage.getContent().stream()
+        .map(CodeReviewsWithUserResponseDto::new)
+        .collect(Collectors.toList());
+
+    return new CodeReviewsSearchResponseDto(
+        category,
+        codeReviewsPage.getPageable().getPageNumber() + 1,
+        codeReviewsPage.getTotalPages(),
+        codeReviewsPage.getTotalElements(),
+        responseDtoList);
+  }
+
   @Transactional
   public void deleteCodeReview(Long codeReviewsId, Users user) {
 
@@ -109,9 +130,7 @@ public class CodeReviewsService {
 
     Users foundUser = validateUser(user);
 
-    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
-    }
+    validateOwnership(foundCodeReviews, foundUser);
 
     foundCodeReviews.delete();
   }
@@ -124,9 +143,7 @@ public class CodeReviewsService {
 
     Users foundUser = validateUser(user);
 
-    if (!foundCodeReviews.getUser().getId().equals(foundUser.getId())) {
-      throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
-    }
+    validateOwnership(foundCodeReviews, foundUser);
 
     foundCodeReviews.updateCodeReview(codeReviewsRequestDto);
 
@@ -163,6 +180,16 @@ public class CodeReviewsService {
     }
 
     return foundCodeReviews;
+  }
+
+  public void validateOwnership(CodeReviews codeReviews, Users user) {
+    Users writer = codeReviews.getUser();
+
+    if (!writer.getRole().equals(RoleEnum.ADMIN)) {
+      if (!writer.getId().equals(user.getId())) {
+        throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+      }
+    }
   }
 
   public String arrangeCategory(String category) {

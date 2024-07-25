@@ -6,6 +6,8 @@ import com.sparta.publicclassdev.domain.community.dto.CommunitiesResponseDto;
 import com.sparta.publicclassdev.domain.community.dto.CommunitiesUpdateRequestDto;
 import com.sparta.publicclassdev.domain.community.entity.Communities;
 import com.sparta.publicclassdev.domain.community.repository.CommunitiesRepository;
+import com.sparta.publicclassdev.domain.communitycomments.dto.CommunityCommentResponseDto;
+import com.sparta.publicclassdev.domain.communitycomments.entity.CommunityComments;
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
@@ -66,8 +68,11 @@ public class CommunitiesService {
 
     public CommunitiesResponseDto findPost(Long communityId) {
         Communities community = checkCommunity(communityId);
+        List<CommunityComments> commentsList = community.getCommentsList();
+        List<CommunityCommentResponseDto> responseDto = commentsList.stream().map(communityComments -> new CommunityCommentResponseDto(communityComments.getContent()))
+            .toList();
 
-        return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory());
+        return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory(), community.getUser().getName(), responseDto);
     }
 
     public Communities checkCommunity(Long communityId){
