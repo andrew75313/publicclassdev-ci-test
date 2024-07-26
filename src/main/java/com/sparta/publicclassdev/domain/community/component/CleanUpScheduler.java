@@ -16,7 +16,7 @@ public class CleanUpScheduler {
         this.redisTemplate = redisTemplate;
     }
 
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 1800000)
     public void cleanUpOldSearchData(){
         String key = "searchRank";
         long currentTime = System.currentTimeMillis();
