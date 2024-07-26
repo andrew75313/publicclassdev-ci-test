@@ -122,46 +122,29 @@ public class CommunitiesService {
     }
 
     public List<CommunitiesRankDto> rank() {
-        String key = "searchRank";
-        long currentTime = System.currentTimeMillis();
-
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
 
-        Set<String> rankAll = zSetOperations.reverseRange(key, 0, -1);
-        if(rankAll != null && !rankAll.isEmpty()){
-            deletePastKeyword(rankAll, currentTime);
-        }
-
-        Set<ZSetOperations.TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores(key, 0, 4);
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores("searchRank", 0, 4);
 
         return typedTuples.stream().map(typedTuple -> new CommunitiesRankDto(typedTuple.getValue())).toList();
     }
 
-
     public void deletePastKeyword(Set<String> keywordList, long currentTime) {
-        log.info("postConstruct때 사용");
 
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
 
         for (String keywords : keywordList) {
-            log.info("keyword" + keywords);
-
             String validTimeObj = (String) redisTemplate.opsForHash().get("keyword_data", keywords);
-            log.info("time" +validTimeObj);
 
-             if(validTimeObj != null){
-                 long time = Long.parseLong(validTimeObj);
+            if(validTimeObj != null){
+                long time = Long.parseLong(validTimeObj);
 
                 if(currentTime - time >= TimeUnit.MINUTES.toMillis(1)){
                     zSetOperations.remove("searchRank", keywords);
                     System.out.println(zSetOperations);
                     redisTemplate.opsForHash().delete("keyword_data", keywords);
-                    log.info("remove" + keywords);
                 }
             }
         }
     }
-
-
-
 }
