@@ -11,23 +11,46 @@ import com.sparta.publicclassdev.domain.communitycomments.entity.CommunityCommen
 import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CommunitiesService {
+
+    private static final Logger log = LoggerFactory.getLogger(CommunitiesService.class);
     private final CommunitiesRepository repository;
     private final RedisTemplate<String, String> redisTemplate;
 
+
+    @PostConstruct
+    public void cleanUpOldSearchData(){
+        log.info("cleanUpOldSearchData 시작");
+        String key = "searchRank";
+        long currentTime = System.currentTimeMillis();
+
+        ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+
+        Set<String> rankAll = zSetOperations.reverseRange(key, 0, -1);
+        if(rankAll != null && !rankAll.isEmpty()){
+            deletePastKeyword(rankAll, currentTime);
+        }
+        log.info("cleanUpOldSearchData 완료");
+    }
 
     public CommunitiesResponseDto createPost(CommunitiesRequestDto requestDto, Users user) {
         Communities community = Communities.builder()
@@ -74,10 +97,10 @@ public class CommunitiesService {
 
         return new CommunitiesResponseDto(community.getTitle(), community.getContent(), community.getCategory(), community.getUser().getName(), responseDto);
     }
-
     public Communities checkCommunity(Long communityId){
         return repository.findById(communityId).orElseThrow(
             () -> new CustomException(ErrorCode.NOT_FOUND_COMMUNITY_POST)
+
         );
     }
 
@@ -85,9 +108,12 @@ public class CommunitiesService {
     public List<CommunitiesResponseDto> searchPost(String keyword, int page) {
         Pageable pageable = PageRequest.of(page, 10);
         Page<Communities> communityPage = repository.findByTitleContainingIgnoreCase(keyword, pageable);
+        Long currentTime = System.currentTimeMillis();
 
         if(!communityPage.isEmpty()){
             redisTemplate.opsForZSet().incrementScore("searchRank",keyword,1);
+            redisTemplate.opsForHash().put("keyword_data", keyword, String.valueOf(currentTime));
+            log.info("검색한 시간"+ currentTime);
         }
 
         return communityPage.stream()
@@ -97,8 +123,45 @@ public class CommunitiesService {
 
     public List<CommunitiesRankDto> rank() {
         String key = "searchRank";
+        long currentTime = System.currentTimeMillis();
+
         ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
-        Set<ZSetOperations.TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores(key, 0, 5);
+
+        Set<String> rankAll = zSetOperations.reverseRange(key, 0, -1);
+        if(rankAll != null && !rankAll.isEmpty()){
+            deletePastKeyword(rankAll, currentTime);
+        }
+
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = zSetOperations.reverseRangeByScoreWithScores(key, 0, 4);
+
         return typedTuples.stream().map(typedTuple -> new CommunitiesRankDto(typedTuple.getValue())).toList();
     }
+
+
+    public void deletePastKeyword(Set<String> keywordList, long currentTime) {
+        log.info("postConstruct때 사용");
+
+        ZSetOperations<String, String> zSetOperations = redisTemplate.opsForZSet();
+
+        for (String keywords : keywordList) {
+            log.info("keyword" + keywords);
+
+            String validTimeObj = (String) redisTemplate.opsForHash().get("keyword_data", keywords);
+            log.info("time" +validTimeObj);
+
+             if(validTimeObj != null){
+                 long time = Long.parseLong(validTimeObj);
+
+                if(currentTime - time >= TimeUnit.MINUTES.toMillis(1)){
+                    zSetOperations.remove("searchRank", keywords);
+                    System.out.println(zSetOperations);
+                    redisTemplate.opsForHash().delete("keyword_data", keywords);
+                    log.info("remove" + keywords);
+                }
+            }
+        }
+    }
+
+
+
 }
