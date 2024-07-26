@@ -46,7 +46,7 @@ public class ChatRoomsServiceTest {
 
         Users testUser = Users.builder()
             .name("testUser")
-            .email("testUser@example.com")
+            .email("testUser@email.com")
             .password("password")
             .role(RoleEnum.USER)
             .build();
@@ -79,11 +79,11 @@ public class ChatRoomsServiceTest {
         ChatRoomsDto chatRoomsDto = ChatRoomsDto.builder()
             .type(ChatRoomsDto.MessageType.CHAT)
             .content("Hello")
-            .sender("unknownUser")
+            .sender("unknown")
             .roomId("1")
             .build();
 
-        when(usersRepository.findByName("unknownUser")).thenReturn(Optional.empty());
+        when(usersRepository.findByName("unknown")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> chatRoomsService.sendMessage(chatRoomsDto))
             .isInstanceOf(CustomException.class)
