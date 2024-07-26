@@ -2,6 +2,7 @@ package com.sparta.publicclassdev.domain.coderuns.entity;
 
 import com.sparta.publicclassdev.domain.codekatas.entity.CodeKatas;
 import com.sparta.publicclassdev.domain.teams.entity.Teams;
+import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.entity.Timestamped;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -41,15 +42,20 @@ public class CodeRuns extends Timestamped {
     @JoinColumn(name = "codekatas_id")
     private CodeKatas codeKatas;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "users_id")
+    private Users users;
+
     @Builder
     public CodeRuns(String code, Long responseTime, String result, String language, Teams teams,
-        CodeKatas codeKatas) {
+        CodeKatas codeKatas, Users users) {
         this.code = code;
         this.responseTime = responseTime;
         this.result = result;
         this.language = language;
         this.teams = teams;
         this.codeKatas = codeKatas;
+        this.users = users;
     }
 
     public void updateResponseTime(Long responseTime, String result) {
