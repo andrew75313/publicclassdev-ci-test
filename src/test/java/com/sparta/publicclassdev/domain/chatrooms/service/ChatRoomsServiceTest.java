@@ -1,3 +1,5 @@
+package com.sparta.publicclassdev.domain.chatrooms.service;
+
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 

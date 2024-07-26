@@ -70,7 +70,7 @@ public class CodeReviewsService {
     return new CodeReviewsResponseDto(codeReview, foundUser);
   }
 
-  public CodeReviewsListResponseDto getAllCodieReviews(int page) {
+  public CodeReviewsListResponseDto getAllCodeReviews(int page) {
 
     Pageable pageable = PageRequest.of(page, SizingConstants.PAGE_SIZE);
 
