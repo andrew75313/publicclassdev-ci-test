@@ -9,11 +9,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "messages")
+@Getter
+@NoArgsConstructor
 public class Messages extends Timestamped {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,4 +32,11 @@ public class Messages extends Timestamped {
     @ManyToOne
     @JoinColumn(name = "chatrooms_id")
     private ChatRooms chatRooms;
+
+    @Builder
+    public Messages(String contents, Users users, ChatRooms chatRooms) {
+        this.contents = contents;
+        this.users = users;
+        this.chatRooms = chatRooms;
+    }
 }

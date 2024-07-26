@@ -70,7 +70,7 @@ public class CodeReviewsService {
     return new CodeReviewsResponseDto(codeReview, foundUser);
   }
 
-  public CodeReviewsListResponseDto getAllCodieReviews(int page) {
+  public CodeReviewsListResponseDto getAllCodeReviews(int page) {
 
     Pageable pageable = PageRequest.of(page, SizingConstants.PAGE_SIZE);
 
@@ -107,9 +107,9 @@ public class CodeReviewsService {
 
     Pageable pageable = PageRequest.of(page, SizingConstants.PAGE_SIZE);
 
-    category = arrangeCategory(category);
+    String searchCategory = arrangeCategory(category);
 
-    Page<Tuple> codeReviewsPage = codeReviewsRepository.findAllByCategory(category + " ", pageable);
+    Page<Tuple> codeReviewsPage = codeReviewsRepository.findAllByCategory(searchCategory, pageable);
 
     List<CodeReviewsWithUserResponseDto> responseDtoList = codeReviewsPage.getContent().stream()
         .map(CodeReviewsWithUserResponseDto::new)
@@ -197,7 +197,7 @@ public class CodeReviewsService {
     return "#" + Arrays.stream(category.split("#"))
         .map(s -> s.replace(" ", "").toLowerCase())
         .filter(s -> !s.isEmpty())
-        .collect(Collectors.joining(" #"));
+        .collect(Collectors.joining(" #")) + " ";
   }
 
   public String uploadCodeFile(Long codeReviewId, String code) {

@@ -47,7 +47,7 @@ public class CodeReviewsController {
   public ResponseEntity<DataResponse<CodeReviewsListResponseDto>> getAllCodeReviews(
       @RequestParam(defaultValue = "1") int page) {
 
-    CodeReviewsListResponseDto responseList = codeReviewsService.getAllCodieReviews(page - 1);
+    CodeReviewsListResponseDto responseList = codeReviewsService.getAllCodeReviews(page - 1);
 
     return ResponseEntity.status(HttpStatus.OK)
         .body(new DataResponse<>(200, "코드 리뷰 게시글 조회 완료", responseList));
@@ -76,7 +76,7 @@ public class CodeReviewsController {
   }
 
   @DeleteMapping("/codereviews/{codeReviewsId}")
-  public ResponseEntity<MessageResponse> deleteCodeReivew(
+  public ResponseEntity<MessageResponse> deleteCodeReview(
       @PathVariable(name = "codeReviewsId") Long codeReviewsId,
       @AuthenticationPrincipal UserDetailsImpl userDetails) {
 

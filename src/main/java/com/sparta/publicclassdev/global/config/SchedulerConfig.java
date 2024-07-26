@@ -13,11 +13,11 @@ public class SchedulerConfig {
 
     private final TeamsService teamsService;
 
-    // 애플리케이션 시작 후 10초 후에 한 번 실행
-    @Scheduled(initialDelay = 10000, fixedDelay = Long.MAX_VALUE)
-    public void initialDelete() {
-        teamsService.deleteAllTeams();
-    }
+//    // 애플리케이션 시작 후 10초 후에 한 번 실행
+//    @Scheduled(initialDelay = 10000, fixedDelay = Long.MAX_VALUE)
+//    public void initialDelete() {
+//        teamsService.deleteAllTeams();
+//    }
 
     @Scheduled(cron = "0 0 0 * * ?")
     public void deleteTeamsMidnight() {

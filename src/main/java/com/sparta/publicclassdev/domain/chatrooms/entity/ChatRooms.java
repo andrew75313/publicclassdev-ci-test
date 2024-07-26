@@ -11,9 +11,17 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "chatrooms")
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatRooms {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,5 +36,4 @@ public class ChatRooms {
 
     @OneToMany(mappedBy = "chatRooms")
     private List<Messages> messages;
-
 }

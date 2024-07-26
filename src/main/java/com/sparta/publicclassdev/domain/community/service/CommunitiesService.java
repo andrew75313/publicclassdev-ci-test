@@ -15,6 +15,7 @@ import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,10 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -65,8 +62,11 @@ public class CommunitiesService {
         return new CommunitiesResponseDto(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
     }
 
-    public CommunitiesResponseDto updatePost(Long communityId, CommunitiesUpdateRequestDto requestDto) {
+    public CommunitiesResponseDto updatePost(Users user, Long communityId, CommunitiesUpdateRequestDto requestDto) {
         Communities community = checkCommunity(communityId);
+        if(!Objects.equals(community.getUser().getId(), user.getId())){
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
 
         community.updateContent(requestDto.getContent());
         repository.save(community);
@@ -76,7 +76,7 @@ public class CommunitiesService {
     public void deletePost(Long communityId, Users user) {
         Communities community = checkCommunity(communityId);
 
-        if(community.getUser() != user){
+        if(!Objects.equals(community.getUser().getId(), user.getId())){
             throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
         }
 

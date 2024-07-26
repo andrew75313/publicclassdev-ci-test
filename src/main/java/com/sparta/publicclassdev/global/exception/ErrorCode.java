@@ -46,7 +46,10 @@ public enum ErrorCode {
 	// User
 	NAME_NOT_UNIQUE(409,"사용 중인 이름입니다."),
 	USER_LOGOUT(403, "이미 로그아웃한 회원입니다."),
-	TOKEN_NOTFOUND(404, "토큰을 찾을 수 없습니다.");
+	TOKEN_NOTFOUND(404, "토큰을 찾을 수 없습니다."),
+
+	//Team
+	TEAM_NOT_FOUND(404, "해당 팀을 찾을 수 없습니다");
 
 	private final Integer status;
 	private final String message;

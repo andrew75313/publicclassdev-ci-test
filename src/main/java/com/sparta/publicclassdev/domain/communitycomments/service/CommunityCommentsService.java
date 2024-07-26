@@ -11,6 +11,7 @@ import com.sparta.publicclassdev.domain.users.entity.Users;
 import com.sparta.publicclassdev.global.exception.CustomException;
 import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class CommunityCommentsService {
         Communities community = checkCommunity(communityId);
         CommunityComments comment = checkComment(commentId);
 
-        if(user.equals(comment.getUser())){
+        if(!Objects.equals(comment.getUser().getId(), user.getId())){
             throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
         }
 
@@ -66,7 +67,7 @@ public class CommunityCommentsService {
         checkCommunity(communityId);
         CommunityComments comment = checkComment(commentId);
 
-        if(user.equals(comment.getUser())){
+        if(!Objects.equals(comment.getUser().getId(), user.getId())){
             throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
         }
 

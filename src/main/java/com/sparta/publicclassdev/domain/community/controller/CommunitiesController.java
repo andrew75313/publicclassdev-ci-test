@@ -40,8 +40,10 @@ public class CommunitiesController {
     }
 
     @PutMapping("/community/{communityId}")
-    public ResponseEntity<DataResponse<CommunitiesResponseDto>> updatePost(@PathVariable Long communityId,@RequestBody CommunitiesUpdateRequestDto requestDto){
-        CommunitiesResponseDto responseDto = service.updatePost(communityId, requestDto);
+    public ResponseEntity<DataResponse<CommunitiesResponseDto>> updatePost(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @PathVariable Long communityId,@RequestBody CommunitiesUpdateRequestDto requestDto){
+        Users user = userDetails.getUser();
+        CommunitiesResponseDto responseDto = service.updatePost(user, communityId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(new DataResponse<>(HttpStatus.OK.value(), "수정 완료", responseDto));
     }
 
