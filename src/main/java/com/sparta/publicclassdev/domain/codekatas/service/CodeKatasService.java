@@ -8,6 +8,7 @@ import com.sparta.publicclassdev.global.exception.ErrorCode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,39 @@ public class CodeKatasService {
     }
 
     @Transactional(readOnly = true)
-    public CodeKatasDto todayCodeKata() {
+    public CodeKatasDto getCodeKata(Long id) {
+        CodeKatas codeKatas = codeKatasRepository.findById(id)
+            .orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND_CODEKATA));
+        return new CodeKatasDto(codeKatas.getId(), codeKatas.getContents(), codeKatas.getMarkDate());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CodeKatasDto> getAllCodeKatas() {
+        List<CodeKatas> codeKatasList = codeKatasRepository.findAll();
+        return codeKatasList.stream()
+            .map(kata -> new CodeKatasDto(kata.getId(), kata.getContents(), kata.getMarkDate()))
+            .collect(Collectors.toList());
+    }
+
+    public void deleteCodeKata(Long id) {
+        CodeKatas codeKatas =codeKatasRepository.findById(id)
+            .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND_CODEKATA));
+        codeKatasRepository.delete(codeKatas);
+    }
+
+    public CodeKatasDto updateCodeKata(Long id, CodeKatasDto codeKatasDto) {
+        CodeKatas codeKatas = codeKatasRepository.findById(id)
+            .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND_CODEKATA));
+
+        codeKatas.updateContents(codeKatasDto.getContents());
+        codeKatas.markCodeKatas(null);
+        codeKatasRepository.save(codeKatas);
+
+        return new CodeKatasDto(codeKatasDto.getId(), codeKatasDto.getContents(), codeKatas.getMarkDate());
+    }
+
+    @Transactional(readOnly = true)
+    public CodeKatasDto getTodayCodeKata() {
         List<CodeKatas> markKata = codeKatasRepository.findByMarkDateIsNull();
         if (markKata.isEmpty()) {
             return createRandomCodeKata();
@@ -52,16 +85,5 @@ public class CodeKatasService {
         codeKatas.markCodeKatas(LocalDate.now());
         codeKatasRepository.save(codeKatas);
         return new CodeKatasDto(codeKatas.getId(), codeKatas.getContents(), codeKatas.getMarkDate());
-    }
-
-    public CodeKatasDto updateCodeKata(Long id, CodeKatasDto codeKatasDto) {
-        CodeKatas codeKatas = codeKatasRepository.findById(id)
-            .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND_CODEKATA));
-
-        codeKatas.updateContents(codeKatasDto.getContents());
-        codeKatas.markCodeKatas(null);
-        codeKatasRepository.save(codeKatas);
-
-        return new CodeKatasDto(codeKatasDto.getId(), codeKatasDto.getContents(), codeKatas.getMarkDate());
     }
 }

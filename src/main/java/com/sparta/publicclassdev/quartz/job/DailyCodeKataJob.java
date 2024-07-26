@@ -15,6 +15,6 @@ public class DailyCodeKataJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        codeKatasService.dailyCodeKata();
+        codeKatasService.getTodayCodeKata();
     }
 }

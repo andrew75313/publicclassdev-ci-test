@@ -16,7 +16,7 @@ public class DailyCodeKataTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext context) {
-        codeKatasService.dailyCodeKata();
+        codeKatasService.getTodayCodeKata();
         return RepeatStatus.FINISHED;
     }
 }
