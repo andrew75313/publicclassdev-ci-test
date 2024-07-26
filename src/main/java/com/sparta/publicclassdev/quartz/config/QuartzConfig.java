@@ -23,7 +23,7 @@ public class QuartzConfig {
     @Bean
     public Trigger dailyCodeKataTrigger(JobDetail jobDetail) {
         return TriggerBuilder.newTrigger()
-            .forJob(dailyCodeKataDetatil())
+            .forJob(jobDetail)
             .withIdentity("dailyCodeKataTrigger")
             .withSchedule(CronScheduleBuilder.cronSchedule("0 0 12 * * ?"))
             .build();
