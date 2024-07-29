@@ -2,6 +2,7 @@ package com.sparta.publicclassdev.domain.users.controller;
 
 import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.PasswordRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.PointRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.PointResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
@@ -60,6 +61,14 @@ public class UsersController {
         UpdateProfileResponseDto responseDto = usersService.updateProfile(userDetails.getUser().getId(), requestDto);
         DataResponse<UpdateProfileResponseDto> response = new DataResponse<>(HttpStatus.OK.value(), "프로필 수정 완료", responseDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @PatchMapping("/profiles/passwords")
+    public ResponseEntity<MessageResponse> updatePassword(
+        @AuthenticationPrincipal UserDetailsImpl userDetails,
+        @Valid @RequestBody PasswordRequestDto requestDto) {
+        usersService.updatePassword(userDetails.getUser().getId(), requestDto);
+        MessageResponse messageResponse = new MessageResponse(HttpStatus.OK.value(), "비밀번호 초기화 완료");
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
     @PostMapping("/logout")
     public ResponseEntity<MessageResponse> logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {

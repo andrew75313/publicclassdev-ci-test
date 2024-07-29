@@ -7,6 +7,7 @@ import com.sparta.publicclassdev.domain.community.repository.CommunitiesReposito
 import com.sparta.publicclassdev.domain.users.dao.UserRedisDao;
 import com.sparta.publicclassdev.domain.users.dto.AuthRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.AuthResponseDto;
+import com.sparta.publicclassdev.domain.users.dto.PasswordRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.PointResponseDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileRequestDto;
 import com.sparta.publicclassdev.domain.users.dto.ProfileResponseDto;
@@ -107,8 +108,7 @@ public class UsersService {
     @Transactional
     public UpdateProfileResponseDto updateProfile(Long id, ProfileRequestDto requestDto) {
         Users user = findById(id);
-        String password = passwordEncoder.encode(requestDto.getPassword());
-        user.updateUsers(requestDto.getName(), password, requestDto.getIntro());
+        user.updateUsers(requestDto.getName(), requestDto.getIntro());
         return new UpdateProfileResponseDto(user);
     }
 
@@ -196,5 +196,12 @@ public class UsersService {
         }
         int newPoint = user.getPoint();
         return new PointResponseDto(newPoint, RankEnum.getRankByPoints(newPoint));
+    }
+
+    @Transactional
+    public void updatePassword(Long id, PasswordRequestDto requestDto) {
+        Users user = findById(id);
+        String password = passwordEncoder.encode(requestDto.getPassword());
+        user.updatePassword(password);
     }
 }
