@@ -2,7 +2,8 @@ package com.sparta.publicclassdev.domain.coderuns.service;
 
 import com.sparta.publicclassdev.domain.codekatas.entity.CodeKatas;
 import com.sparta.publicclassdev.domain.codekatas.repository.CodeKatasRepository;
-import com.sparta.publicclassdev.domain.coderuns.dto.CodeRunsDto;
+import com.sparta.publicclassdev.domain.coderuns.dto.CodeRunsRequestDto;
+import com.sparta.publicclassdev.domain.coderuns.dto.CodeRunsResponseDto;
 import com.sparta.publicclassdev.domain.coderuns.entity.CodeRuns;
 import com.sparta.publicclassdev.domain.coderuns.repository.CodeRunsRepository;
 import com.sparta.publicclassdev.domain.teams.entity.Teams;
@@ -18,6 +19,9 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,26 +35,42 @@ public class CodeRunsService {
     private final UsersRepository usersRepository;
 
     @Transactional
-    public CodeRunsDto runCode(Long teamsId, Long codeKatasId, Long usersId, String code, String language) {
-        Teams teams = teamsRepository.findById(teamsId)
-            .orElseThrow(()-> new CustomException(ErrorCode. TEAM_NOT_FOUND));
-        CodeKatas codeKatas = codeKatasRepository.findById(codeKatasId)
-            .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND_CODEKATA));
-        Users users = usersRepository.findById(usersId)
-            .orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+    public CodeRunsResponseDto runCode(Long teamsId, Long codeKatasId, CodeRunsRequestDto requestDto) {
+        Users users = getCurrentUser();
+        Teams teams = findTeamById(teamsId);
+        checkUserTeam(users, teams);
 
-        Long startTime = System.currentTimeMillis();
-        String result = executeCodeByLanguage(language, code);
-        Long endTime = System.currentTimeMillis();
+        CodeKatas codeKatas = findCodeKatasById(codeKatasId);
 
-        Long responseTime = endTime - startTime;
+        long startTime = System.currentTimeMillis();
+        String result = executeCodeByLanguage(requestDto.getLanguage(), requestDto.getCode());
+        long endTime = System.currentTimeMillis();
+        long responseTime = endTime - startTime;
 
-        Optional<CodeRuns> executeCode = codeRunsRepository.findByTeamsIdAndCodeKatasId(teamsId, codeKatasId);
+        CodeRuns codeRuns = getCreateCodeRun(teamsId, codeKatasId, requestDto.getCode(),
+            requestDto.getLanguage(), result, responseTime, teams, codeKatas, users);
 
+        codeRunsRepository.save(codeRuns);
+
+        return new CodeRunsResponseDto(codeKatasId, teamsId, users.getId(), responseTime, result);
+    }
+
+    public List<CodeRuns> getCodeRunsByTeam(Long teamsId) {
+        Users currentUser = getCurrentUser();
+        Teams teams = findTeamById(teamsId);
+        checkUserTeam(currentUser, teams);
+
+        return codeRunsRepository.findAllByTeamsId(teamsId);
+    }
+
+    private CodeRuns getCreateCodeRun(Long teamsId, Long codeKatasId, String code, String language,
+        String result, long responseTime, Teams team, CodeKatas codeKatas, Users currentUser) {
+        Optional<CodeRuns> existingRun = codeRunsRepository.findByTeamsIdAndCodeKatasId(teamsId,
+            codeKatasId);
         CodeRuns codeRuns;
-        if(executeCode.isPresent()) {
-            codeRuns = executeCode.get();
-            if(responseTime < executeCode.get().getResponseTime()) {
+        if (existingRun.isPresent()) {
+            codeRuns = existingRun.get();
+            if (responseTime < codeRuns.getResponseTime()) {
                 codeRuns.updateResponseTime(responseTime, result);
                 codeRunsRepository.save(codeRuns);
             }
@@ -60,28 +80,24 @@ public class CodeRunsService {
                 .responseTime(responseTime)
                 .result(result)
                 .language(language)
-                .teams(teams)
+                .teams(team)
                 .codeKatas(codeKatas)
-                .users(users)
+                .users(currentUser)
                 .build();
             codeRunsRepository.save(codeRuns);
         }
-        return new CodeRunsDto(codeKatasId, teamsId, usersId, responseTime, result);
-    }
-
-    public List<CodeRuns> getCodeRunsByTeam(Long teamsId) {
-        return codeRunsRepository.findAllByTeamsId(teamsId);
+        return codeRuns;
     }
 
     private String executeCodeByLanguage(String language, String code) {
         switch (language.toLowerCase()) {
-            case "python" :
+            case "python":
                 return executePythonCode(code);
-            case "javascript" :
+            case "javascript":
                 return executeJavaScriptCode(code);
-            case "java" :
+            case "java":
                 return executeJavaCode(code);
-            case "ruby" :
+            case "ruby":
                 return executeRubyCode(code);
             default:
                 return "지원하지 않는 언어 : " + language;
@@ -113,11 +129,13 @@ public class CodeRunsService {
             process.waitFor();
 
             String classFilePath = file.getAbsolutePath().replace(".java", ".class");
-            ProcessBuilder runProcessBuilder = new ProcessBuilder("java", "-cp", file.getParent(), file.getName().replace(".java", ""));
+            ProcessBuilder runProcessBuilder = new ProcessBuilder("java", "-cp", file.getParent(),
+                file.getName().replace(".java", ""));
             runProcessBuilder.redirectErrorStream(true);
             Process runProcess = runProcessBuilder.start();
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(runProcess.getInputStream()));
+            BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(runProcess.getInputStream()));
             StringBuilder stringBuilder = new StringBuilder();
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -142,11 +160,13 @@ public class CodeRunsService {
             fileWriter.write(code);
             fileWriter.close();
 
-            ProcessBuilder processBuilder = new ProcessBuilder(command, scriptFile.getAbsolutePath());
+            ProcessBuilder processBuilder = new ProcessBuilder(command,
+                scriptFile.getAbsolutePath());
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
             StringBuilder stringBuilder = new StringBuilder();
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -160,6 +180,35 @@ public class CodeRunsService {
         } catch (Exception e) {
             e.printStackTrace();
             return e.getMessage();
+        }
+    }
+
+    private Users getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CustomException(ErrorCode.NOT_UNAUTHORIZED);
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return usersRepository.findByEmail(userDetails.getUsername())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    private Teams findTeamById(Long teamsId) {
+        return teamsRepository.findById(teamsId)
+            .orElseThrow(() -> new CustomException(ErrorCode.TEAM_NOT_FOUND));
+    }
+
+    private CodeKatas findCodeKatasById(Long codeKatasId) {
+        return codeKatasRepository.findById(codeKatasId)
+            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CODEKATA));
+    }
+
+    private void checkUserTeam(Users user, Teams team) {
+        boolean isInTeam = user.getTeamUsers().stream()
+            .anyMatch(teamUser -> teamUser.getTeams().equals(team));
+        if (!isInTeam) {
+            throw new CustomException(ErrorCode.USER_NOT_TEAM);
         }
     }
 }

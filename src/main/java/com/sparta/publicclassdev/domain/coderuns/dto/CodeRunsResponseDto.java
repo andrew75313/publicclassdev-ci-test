@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CodeRunsDto {
+public class CodeRunsResponseDto {
 
     private Long codeKatasId;
     private Long teamsId;
@@ -13,7 +13,7 @@ public class CodeRunsDto {
     private Long responseTime;
     private String result;
 
-    public CodeRunsDto(Long codeKatasId, Long teamsId, Long usersId, Long responseTime, String result) {
+    public CodeRunsResponseDto(Long codeKatasId, Long teamsId, Long usersId, Long responseTime, String result) {
         this.codeKatasId = codeKatasId;
         this.teamsId = teamsId;
         this.usersId = usersId;
