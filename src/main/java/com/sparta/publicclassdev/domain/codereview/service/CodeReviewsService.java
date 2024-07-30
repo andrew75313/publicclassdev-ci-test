@@ -71,6 +71,7 @@ public class CodeReviewsService {
 
       codeReview.updateCode(uploadedCode);
     }
+
     return new CodeReviewsResponseDto(codeReview, foundUser);
   }
 
@@ -159,9 +160,14 @@ public class CodeReviewsService {
 
     foundCodeReviews.updateCategory(categories);
 
-    String uploadedCode = uploadCodeFile(foundCodeReviews.getId(), codeReviewsRequestDto.getCode());
+    String code = codeReviewsRequestDto.getCode();
 
-    foundCodeReviews.updateCode(uploadedCode);
+    if (code != null && !code.isEmpty()) {
+
+      String uploadedCode = uploadCodeFile(foundCodeReviews.getId(), code);
+
+      foundCodeReviews.updateCode(uploadedCode);
+    }
 
     return new CodeReviewsResponseDto(foundCodeReviews, foundUser);
   }
