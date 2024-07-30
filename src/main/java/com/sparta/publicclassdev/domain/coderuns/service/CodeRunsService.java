@@ -55,12 +55,12 @@ public class CodeRunsService {
         return new CodeRunsResponseDto(codeKatasId, teamsId, users.getId(), responseTime, result);
     }
     
-    private Long runTime(String result) {
+    private long runTime(String result) {
         String[] lines = result.split("\\n");
         for (String line : lines) {
-            if (line.startsWith("실행 시간 : ")) {
-                String[] parts = line.split(" ");
-                return Long.parseLong(parts[2]);
+            if (line.startsWith("Execution time:")) {
+                String timeStr = line.replace("Execution time:", "").replace(" ms", "").trim();
+                return Long.parseLong(timeStr);
             }
         }
         throw new CustomException(ErrorCode.INVALID_REQUEST);

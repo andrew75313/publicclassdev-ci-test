@@ -56,7 +56,7 @@ public class JavaCodeRunner implements CodeRunner {
 
             Long endTime = System.currentTimeMillis();
             Long responseTime = endTime - startTime;
-            stringBuilder.append("실행 시간 : ").append(responseTime).append(" ms\n");
+            stringBuilder.append("Execution time:").append(responseTime).append(" ms\n");
 
             file.delete();
             new File(file.getAbsolutePath().replace(".java", ".class")).delete();
