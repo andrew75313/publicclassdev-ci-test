@@ -63,10 +63,14 @@ public class CodeReviewsService {
 
     codeReviewsRepository.save(codeReview);
 
-    String uploadedCode = uploadCodeFile(codeReview.getId(), codeReviewsRequestDto.getCode());
+    String code = codeReviewsRequestDto.getCode();
 
-    codeReview.updateCode(uploadedCode);
+    if (code != null && !code.isEmpty()) {
 
+      String uploadedCode = uploadCodeFile(codeReview.getId(), code);
+
+      codeReview.updateCode(uploadedCode);
+    }
     return new CodeReviewsResponseDto(codeReview, foundUser);
   }
 
@@ -92,7 +96,11 @@ public class CodeReviewsService {
 
     CodeReviews foundCodeReviews = validateCodeReviewId(codeReviewsId);
 
-    String code = downloadCodeFile(foundCodeReviews);
+    String code = null;
+
+    if (foundCodeReviews.getCode() != null) {
+      code = downloadCodeFile(foundCodeReviews);
+    }
 
     List<CodeReviewCommentsWithLikesResponseDto> commentList = codeReviewCommentsRepository.findByCodeReviewIdWithDetails(
             codeReviewsId).stream()
@@ -203,22 +211,20 @@ public class CodeReviewsService {
   public String uploadCodeFile(Long codeReviewId, String code) {
     String filename = "codereviews-code/code-" + codeReviewId + ".txt";
 
-    if (code != null && !code.isEmpty()) {
-      try {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(
-            StandardCharsets.UTF_8));
+    try {
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(code.getBytes(
+          StandardCharsets.UTF_8));
 
-        minioClient.putObject(
-            PutObjectArgs.builder()
-                .bucket("project-dev-bucket")
-                .object(filename)
-                .stream(inputStream, inputStream.available(), -1)
-                .contentType("text/plain")
-                .build()
-        );
-      } catch (Exception e) {
-        throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
-      }
+      minioClient.putObject(
+          PutObjectArgs.builder()
+              .bucket("project-dev-bucket")
+              .object(filename)
+              .stream(inputStream, inputStream.available(), -1)
+              .contentType("text/plain")
+              .build()
+      );
+    } catch (Exception e) {
+      throw new CustomException(ErrorCode.FILE_UPLOAD_FAILED);
     }
 
     return filename;
