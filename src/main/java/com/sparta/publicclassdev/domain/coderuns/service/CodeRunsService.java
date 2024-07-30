@@ -41,7 +41,6 @@ public class CodeRunsService {
         checkUserTeam(users, teams);
 
         CodeKatas codeKatas = findCodeKatasById(codeKatasId);
-
         CodeRunner codeRunner = getCodeRunner(requestDto.getLanguage());
         String result = codeRunner.runCode(requestDto.getCode());
         

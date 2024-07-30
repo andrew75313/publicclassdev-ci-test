@@ -38,7 +38,7 @@ public class JavaScriptCodeRunner implements CodeRunner {
 
             scriptFile.delete();
             
-            stringBuilder.append("Execution time:").append(responseTime).append(" ms\n");
+            stringBuilder.append("Execution time: ").append(responseTime).append(" ms");
 
             return stringBuilder.toString();
         } catch (Exception e) {

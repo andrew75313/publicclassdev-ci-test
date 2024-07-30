@@ -37,7 +37,7 @@ public class PythonCodeRunner implements CodeRunner {
             Long responseTime = endTime - startTime;
             scriptFile.delete();
             
-            stringBuilder.append("Execution time:").append(responseTime).append(" ms\n");
+            stringBuilder.append("Execution time: ").append(responseTime).append(" ms");
             
             return stringBuilder.toString();
         } catch (Exception e) {
