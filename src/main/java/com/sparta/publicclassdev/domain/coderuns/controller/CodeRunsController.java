@@ -23,7 +23,7 @@ public class CodeRunsController {
 
     private final CodeRunsService codeRunsService;
 
-    @PostMapping("/runs")
+    @PostMapping("/{teamsId}/{codeKatasId}/runs")
     public ResponseEntity<DataResponse<CodeRunsResponseDto>> runCode(@PathVariable Long teamsId,
                                                                      @PathVariable Long codeKatasId,
                                                                      @RequestBody CodeRunsRequestDto request) {
