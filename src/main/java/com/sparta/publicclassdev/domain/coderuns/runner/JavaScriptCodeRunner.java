@@ -18,6 +18,8 @@ public class JavaScriptCodeRunner implements CodeRunner {
             try (FileWriter fileWriter = new FileWriter(scriptFile)){
                 fileWriter.write(code);
             }
+            
+            Long startTime = System.currentTimeMillis();
 
             ProcessBuilder processBuilder = new ProcessBuilder(command, scriptFile.getAbsolutePath());
             processBuilder.redirectErrorStream(true);
@@ -30,8 +32,13 @@ public class JavaScriptCodeRunner implements CodeRunner {
                 stringBuilder.append(line).append("\n");
             }
             bufferedReader.close();
+            
+            Long endTime = System.currentTimeMillis();
+            Long responseTime = endTime - startTime;
 
             scriptFile.delete();
+            
+            stringBuilder.append("실행 시간 : ").append(responseTime).append(" ms\n");
 
             return stringBuilder.toString();
         } catch (Exception e) {

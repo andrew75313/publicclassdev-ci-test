@@ -43,10 +43,9 @@ public class CodeRunsService {
         CodeKatas codeKatas = findCodeKatasById(codeKatasId);
 
         CodeRunner codeRunner = getCodeRunner(requestDto.getLanguage());
-        long startTime = System.currentTimeMillis();
         String result = codeRunner.runCode(requestDto.getCode());
-        long endTime = System.currentTimeMillis();
-        long responseTime = endTime - startTime;
+        
+        Long responseTime = runTime(result);
 
         CodeRuns codeRuns = getCreateCodeRun(teamsId, codeKatasId, requestDto.getCode(),
             requestDto.getLanguage(), result, responseTime, teams, codeKatas, users);
@@ -54,6 +53,17 @@ public class CodeRunsService {
         codeRunsRepository.save(codeRuns);
 
         return new CodeRunsResponseDto(codeKatasId, teamsId, users.getId(), responseTime, result);
+    }
+    
+    private Long runTime(String result) {
+        String[] lines = result.split("\\n");
+        for (String line : lines) {
+            if (line.startsWith("실행 시간 : ")) {
+                String[] parts = line.split(" ");
+                return Long.parseLong(parts[2]);
+            }
+        }
+        throw new CustomException(ErrorCode.INVALID_REQUEST);
     }
 
     public List<CodeRuns> getCodeRunsByTeam(Long teamsId) {

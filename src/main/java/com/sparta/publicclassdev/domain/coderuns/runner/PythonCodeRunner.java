@@ -18,7 +18,9 @@ public class PythonCodeRunner implements CodeRunner {
             try (FileWriter fileWriter = new FileWriter(scriptFile)){
                 fileWriter.write(code);
             }
-
+            
+            long startTime = System.currentTimeMillis();
+            
             ProcessBuilder processBuilder = new ProcessBuilder(command, scriptFile.getAbsolutePath());
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
@@ -31,8 +33,12 @@ public class PythonCodeRunner implements CodeRunner {
             }
             bufferedReader.close();
 
+            Long endTime = System.currentTimeMillis();
+            Long responseTime = endTime - startTime;
             scriptFile.delete();
-
+            
+            stringBuilder.append("실행 시간 : ").append(responseTime).append(" ms\n");
+            
             return stringBuilder.toString();
         } catch (Exception e) {
             e.printStackTrace();
